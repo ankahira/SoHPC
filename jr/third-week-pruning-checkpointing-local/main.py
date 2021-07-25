@@ -24,7 +24,11 @@ print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 data = fetch_cifar10()
 x_train, y_train, x_test, y_test = preprocess_data(data)
 
-for model_type in ("baseline", "pruned"):
+model_type = "prune"
+final_sparsity_values = (0, 0.2, 0.4, 0.55, 0.7, 0.8, 0.9, 0.95, 0.99)
+
+# for model_type in ("baseline", "pruned"):
+for final_sparsity in final_sparsity_values:
     model = create_model(x_train.shape[1:])
     callbacks = []
     saved_model_path = f"./{model_type}/model.h5"
@@ -33,8 +37,8 @@ for model_type in ("baseline", "pruned"):
     if model_type == "pruned":  # configuring pruning and creating pruned model
         end_step = np.ceil(y_train.shape[0] / BATCH_SIZE).astype(np.int32) * NUM_EPOCHS
         pruning_params = {
-            'pruning_schedule': tfmot.sparsity.keras.PolynomialDecay(initial_sparsity=0.50,
-                                                                     final_sparsity=0.80,
+            'pruning_schedule': tfmot.sparsity.keras.PolynomialDecay(initial_sparsity=final_sparsity / 2,
+                                                                     final_sparsity=final_sparsity,
                                                                      begin_step=0,
                                                                      end_step=end_step)
         }
@@ -70,6 +74,11 @@ for model_type in ("baseline", "pruned"):
             monitor='accuracy',
             mode='auto')
         callbacks.append(model_checkpoint_callback)
+
+        print()
+        model.summary()
+        print()
+
         start = time()
         history = model.fit(x_train, y_train, batch_size=BATCH_SIZE,
                             epochs=NUM_EPOCHS, callbacks=callbacks)
@@ -89,9 +98,6 @@ for model_type in ("baseline", "pruned"):
     data_for_plots["test_accuracies"].append(test_results[1])
 
 if not model_restored:
-    draw_and_save_training_plots(history_data, "train-loss-acc")
-    draw_and_save_bar_charts(data_for_plots)
-    #draw_and_save_other_plots(data_for_plots, )
-
-
-# data - training time, test accuracy, test loss, zipped files size
+    #draw_and_save_training_plots(history_data, "train-loss-acc")
+    #draw_and_save_bar_charts(data_for_plots)
+    draw_and_save_other_plots(data_for_plots, final_sparsity_values)

@@ -34,7 +34,7 @@ def preprocess_data(data):
            tf.cast(data[2], tf.float32) / 255.0, tf.one_hot(data[3], depth=10)
 
 
-def draw_and_save_training_plots(history_tuples, filename):
+def draw_and_save_training_plots(history_tuples, filename="train-loss-acc"):
     fig, ax = plt.subplots(2, 1)
     for history, name in history_tuples:
         ax[0].plot(range(1, len(history.history['loss']) + 1), history.history['loss'], label=f"{name} training Loss")
