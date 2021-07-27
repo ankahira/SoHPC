@@ -24,7 +24,7 @@ print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 data = fetch_cifar10()
 x_train, y_train, x_test, y_test = preprocess_data(data)
 
-model_type = "prune"
+model_type = "pruned"
 final_sparsity_values = (0, 0.2, 0.4, 0.55, 0.7, 0.8, 0.9, 0.95, 0.99)
 
 # for model_type in ("baseline", "pruned"):
